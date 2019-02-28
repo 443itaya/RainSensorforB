@@ -2,14 +2,13 @@ import tkinter
 import cv2
 import PIL.Image, PIL.ImageTk
 import numpy as np
-
+from flask import Flask, request, jsonify, make_response
+import csv
 
 class App:
-    def __init__(self,window,window_title,video_source=0):
+    def __init__(self,window,video_source=0):
         self.window = window
-        self.window.title(window_title)
     
-        self.window.configure(bg='green')
         self.video_source = video_source
 
         self.vid = MyVideoCapture(self.video_source)
@@ -34,6 +33,9 @@ class App:
             if self.state == False:
                 self.state = not self.state
                 self.btn.configure(text="STOP")
+                file = open('rainInfo.csv', 'w')
+                file.write("0\n")
+                file.close()
                 self.count = 0
                 self.tmp = 0
             else:
@@ -45,7 +47,6 @@ class App:
 
         self.delay = 15
         self.update()
-
 
 
     def update(self):
@@ -66,6 +67,9 @@ class App:
                     self.img_rain = PIL.ImageTk.PhotoImage(PIL.Image.open('rain.png').convert('RGB'))
                     self.count = 0
                     if self.tmp == 0:
+                        file = open('rainInfo.csv', 'w')
+                        file.write("1\n")
+                        file.close()
                         print(1)
                     self.tmp = 1
                 else:
@@ -74,6 +78,9 @@ class App:
                         self.img_rain = PIL.ImageTk.PhotoImage(PIL.Image.open('rain.png').convert('RGB'))
                     elif self.count >= 30:
                         if self.tmp == 1:
+                            file = open('rainInfo.csv', 'w')
+                            file.write("0\n")
+                            file.close()
                             print(0)
                         self.tmp = 0
                 
@@ -101,7 +108,7 @@ class MyVideoCapture:
            self.vid.release()
 
 def main():
-    app = App(tkinter.Tk(), "","http://192.168.1.44:8080/?action=stream")
+    app = App(tkinter.Tk(),"http://192.168.1.44:8080/?action=stream")
     app.window.mainloop()
 
 if __name__ == '__main__':
